@@ -1,6 +1,7 @@
 ﻿@page "/login"
 
 @inject NavigationManager navMan
+@inject ProtectedSessionStorage storage
 
 <div class="row">
     <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
@@ -59,6 +60,8 @@
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
         await HttpContext!.SignInAsync(principal);
+
+        await storage.SetAsync("UserID", userAccount.ID);
 
         navMan.NavigateTo("/");
     }
