@@ -4,4 +4,23 @@
 
 <img src="Images/homepageimage.png"/>
 
-<p>You are currently not logged in. If you don't have an account, please register</p>
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bolder">Welcome to <span class="text-danger">CarShare</span></h2>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <span>You are not logged in. Please <a class="fw-bolder" href="/login">click here</a> to log in.</span>
+                        <span>Not a part of CarShare yet? <a class="fw-bolder" href="/register">click here</a> to register and get started!</span>
+                    </NotAuthorized>
+                    <Authorized>
+                        <span>Loggen in as <b>@context.User.Identity!.Name</b>. <a class="fw-bolder" href="/logout">Click here</a> to log out.</span>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </div>
+</div>

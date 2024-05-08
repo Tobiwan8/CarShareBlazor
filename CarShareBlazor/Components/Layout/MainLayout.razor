@@ -2,36 +2,29 @@
 
 <div class="page">
     <div class="sidebar">
-        @if (!isLoggedIn)
-        {
-            
-        }
-        else
-        {
             <NavMenu />
-        }
     </div>
 
     <main>
-        @if (!isLoggedIn)
-        {
-            <div class="top-row px-4">
-                <NavLink class="nav-link" href="login">
-                    <span aria-hidden="true"></span> Log in
-                </NavLink>
-                <NavLink class="btn btn-primary" href="register">
-                    <span aria-hidden="true"></span> Register
-                </NavLink>
-            </div>
-        }
-        else
-        {
-            <div class="top-row px-4">
-                <NavLink class="nav-link" href="/">
-                    <span aria-hidden="true"></span> Log out
-                </NavLink>
-            </div>
-        }
+        <AuthorizeView>
+            <NotAuthorized>
+                <div class="top-row px-4">
+                    <NavLink class="nav-link" href="login">
+                        <span aria-hidden="true"></span> Log in
+                    </NavLink>
+                    <NavLink class="btn btn-primary" href="register">
+                        <span aria-hidden="true"></span> Register
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+            <Authorized>
+                <div class="top-row px-4">
+                    <NavLink class="nav-link" href="logout">
+                        <span aria-hidden="true"></span> Log out
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
         <article class="content px-4">
             @Body
@@ -46,5 +39,4 @@
 </div>
 
 @code{
-    private bool isLoggedIn;
 }
