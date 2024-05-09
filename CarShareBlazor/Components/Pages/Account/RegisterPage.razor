@@ -1,7 +1,7 @@
 ﻿@page "/register"
 
 @inject NavigationManager navMan
-@inject ProtectedSessionStorage storage
+@* @inject ProtectedSessionStorage storage *@
 
 <div class="row">
     <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
@@ -9,7 +9,7 @@
             <DataAnnotationsValidator />
             <div class="mb-3" text-center flex-column>
                 <img src="/favicon.png" style="max-height:5rem" />
-                <h3>LOGIN</h3>
+                <h3>Register</h3>
             </div>
             <div class="mb-3">
                 <label>User Name</label>
@@ -19,11 +19,6 @@
             <div class="mb-3">
                 <label>Password</label>
                 <InputText @bind-Value="Model.Password" placeholder="Password" type="password" class="form-control" />
-                <ValidationMessage For="() => Model.Password" />
-            </div>
-            <div class="mb-3">
-                <label>Re-enter Password</label>
-                <InputText @bind-Value="rePassword" placeholder="Password" type="password" class="form-control"/>
                 <ValidationMessage For="() => Model.Password" />
             </div>
             <div class="mb-3 text-center">
@@ -44,25 +39,19 @@
     public LoginViewModel Model { get; set; } = new();
 
     private string? errorMessage;
-    private string? rePassword;
-    private RegisterUser? registerUser; //RENAME!!!! only to see what it is in outcommented code
+    private RegisterUser? registerUser;
 
     private async Task Authenticate()
     {
-        if (Model.Password != rePassword)
-        {
-            errorMessage = "Passwords do not match";
-            return;
-        }
+        registerUser = new();
 
         try
         {
-            registerUser = new();
             UserModel? userAccount = await registerUser.RegisterUserAsync(Model);
 
-            if (userAccount is null || userAccount.Password != Model.Password)
+            if (userAccount is null)
             {
-                errorMessage = "Invalid User Name or Password";
+                errorMessage = "Username already exists";
                 return;
             }
 
@@ -76,34 +65,13 @@
             var principal = new ClaimsPrincipal(identity);
             await HttpContext!.SignInAsync(principal);
 
-            await storage.SetAsync("UserID", userAccount.ID);
+            // await storage.SetAsync("UserID", userAccount.ID);
 
-            navMan.NavigateTo("/");
+            navMan.NavigateTo("/"); //Go to register person
         }
         catch
         {
             errorMessage = "User already exists";
         }
-        // loginUser = new();
-        // UserModel? userAccount = await loginUser.LoginUserAsync(Model);
-        // if (userAccount is null || userAccount.Password != Model.Password)
-        // {
-        //     errorMessage = "Invalid User Name or Password";
-        //     return;
-        // }
-
-        // var claims = new List<Claim>
-        // {
-        //     new Claim(ClaimTypes.Name, Model.UserName!),
-        //     new Claim(ClaimTypes.Role, userAccount.Role!)
-        // };
-
-        // var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        // var principal = new ClaimsPrincipal(identity);
-        // await HttpContext!.SignInAsync(principal);
-
-        // await storage.SetAsync("UserID", userAccount.ID);
-
-        // navMan.NavigateTo("/");
     }
 }

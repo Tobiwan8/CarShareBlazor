@@ -1,5 +1,7 @@
 ﻿@page "/"
 
+@* @inject ProtectedSessionStorage storage *@
+
 <PageTitle>Home</PageTitle>
 
 <img src="Images/homepageimage.png"/>
@@ -24,3 +26,10 @@
         </div>
     </div>
 </div>
+
+@code{
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     ProtectedBrowserStorageResult<int> result = await storage.GetAsync<int>("UserID");
+    // }
+}
