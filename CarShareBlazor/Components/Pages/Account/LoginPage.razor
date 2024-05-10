@@ -1,7 +1,6 @@
 ﻿@page "/login"
 
 @inject NavigationManager navMan
-@* @inject ProtectedSessionStorage storage *@
 
 <div class="row">
     <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
@@ -40,11 +39,14 @@
 
     private string? errorMessage;
     private LoginUser? loginUser;
+    private UserModel? userAccount;
+    private PersonModel? personModel;
+    private CheckIfUserHasPerson? hasPerson;
 
     private async Task Authenticate()
     {
         loginUser = new();
-        UserModel? userAccount = await loginUser.LoginUserAsync(Model);
+        userAccount = await loginUser.LoginUserAsync(Model);
         if(userAccount is null || userAccount.Password != Model.Password)
         {
             errorMessage = "Invalid User Name or Password";
@@ -54,15 +56,24 @@
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, Model.UserName!),
-            new Claim(ClaimTypes.Role, userAccount.Role!)
+            new Claim(ClaimTypes.Role, userAccount.Role!),
+            new Claim("UserID", userAccount.ID.ToString())
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
         await HttpContext!.SignInAsync(principal);
 
-        //await storage.SetAsync("UserID", userAccount.ID);
+        hasPerson = new();
+        personModel = await hasPerson.CheckIfUserHasPersonAsync(userAccount.ID);
 
-        navMan.NavigateTo("/");
+        if (personModel is null)
+        {
+            navMan.NavigateTo("/registerperson", true);
+        }
+        else
+        {
+            navMan.NavigateTo("/");
+        }
     }
 }

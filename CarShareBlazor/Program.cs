@@ -14,13 +14,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
         options.AccessDeniedPath = "/access-denied";
     });
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("RequireUnauthenticated",
-        policy => policy.RequireAssertion(context =>
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("RequireUnauthenticated", policy => policy.RequireAssertion(context =>
             !context.User.Identity!.IsAuthenticated));
-});
-builder.Services.AddCascadingAuthenticationState(); //THIS IS WHERE I GOT TO
+builder.Services.AddCascadingAuthenticationState();
 
 var app = builder.Build();
 
@@ -33,13 +30,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseStaticFiles();
-app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+app.UseAntiforgery();
 app.Run();

@@ -37,13 +37,14 @@
 </div>
 
 @code {
-        [CascadingParameter]
-        public HttpContext? HttpContext { get; set; }
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
 
-        [SupplyParameterFromForm]
-        public RegisterViewModel RegisterModel { get; set; } = new();
+    [SupplyParameterFromForm]
+    public RegisterViewModel RegisterModel { get; set; } = new();
 
     private string? errorMessage;
+    private bool isRegisterSuccess;
     private RegisterUser? registerUser;
 
     private async Task AuthenticateAsync()
@@ -74,18 +75,24 @@
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, RegisterModel.UserName!),
-                new Claim(ClaimTypes.Role, userAccount.Role!)
+                new Claim(ClaimTypes.Role, userAccount.Role!),
+                new Claim("UserID", userAccount.ID.ToString())
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             await HttpContext!.SignInAsync(principal);
+
+            isRegisterSuccess = true;
         }
         catch(Exception e)
         {
             errorMessage = $"an error as occured: {e.Message}";
         }
 
-        navMan.NavigateTo("/");
+        if (isRegisterSuccess)
+        {
+            navMan.NavigateTo("/registerperson");
+        }
     }
 }
