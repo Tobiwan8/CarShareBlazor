@@ -8,7 +8,7 @@ namespace CarShareBlazor.Data
 {
     public class RegisterUser
     {
-        public async Task<UserModel?> RegisterUserAsync(LoginViewModel user)
+        public async Task<UserModel?> RegisterUserAsync(GetUserLoginDTO user)
         {
             using HttpClient client = new()
             {

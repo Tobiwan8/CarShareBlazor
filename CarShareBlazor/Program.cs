@@ -14,7 +14,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
         options.AccessDeniedPath = "/access-denied";
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireUnauthenticated",
+        policy => policy.RequireAssertion(context =>
+            !context.User.Identity!.IsAuthenticated));
+});
 builder.Services.AddCascadingAuthenticationState(); //THIS IS WHERE I GOT TO
 
 var app = builder.Build();
