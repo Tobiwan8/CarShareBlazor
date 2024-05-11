@@ -1,0 +1,28 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CarShareBlazor.Models.ViewModels
+{
+    public class EditProfileViewModel
+    {
+        public int UserID { get; set; }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide User Name")]
+        public string? UserName { get; set; }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Password")]
+        public string? Password { get; set; }
+
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
+        public string? ConfirmPassword { get; set; }
+
+        public string? Role { get; set; }
+
+        public int PersonID { get; set; }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide Name")]
+        public string? FirstName { get; set; }
+
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please provide LastName")]
+        public string? LastName { get; set; }
+    }
+}

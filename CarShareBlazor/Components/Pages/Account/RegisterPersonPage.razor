@@ -1,14 +1,12 @@
 ﻿@page "/registerperson"
 
 @inject NavigationManager navMan
-@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
 @attribute [Authorize(Roles = "Admin,User")]
 @attribute [RequireAntiforgeryToken(required: false)]
 
 <div class="row">
     <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
         <EditForm Model="@RegisterPersonModel" OnValidSubmit="RegisterPersonAsync" FormName="RegisterPersonForm">
-            @* <input type="hidden" name="__RequestVerificationToken" value="@requestVerificationToken"> *@
             <DataAnnotationsValidator />
             <div class="mb-3" text-center flex-column>
                 <img src="/favicon.png" style="max-height:5rem" />
@@ -30,7 +28,6 @@
             <div class="mb-3 d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Register</button>
             </div>
-                <AntiforgeryToken/>
         </EditForm>
     </div>
 </div>
@@ -49,16 +46,12 @@
     private PersonModel? personModel;
     private CheckIfUserHasPerson? hasPerson;
 
-    // private string? requestVerificationToken;
     private string? errorMessage;
     private int userID;
     private bool isRegisterSuccess;
 
     protected override async Task OnInitializedAsync()
     {
-        // var tokens = antiforgery.GetAndStoreTokens(HttpContext!);
-        // requestVerificationToken = tokens.RequestToken;
-
         var authenticationState = await authenticationStateTask!;
         var userIdClaim = authenticationState.User.FindFirst("UserID");
         if (userIdClaim != null)
@@ -77,20 +70,7 @@
 
     private async Task RegisterPersonAsync()
     {
-        // var authenticationState = await authenticationStateTask!;
-        // var userIdClaim = authenticationState.User.FindFirst("UserID");
-        // if (userIdClaim != null)
-        // {
-        //     userID = Convert.ToInt32(userIdClaim.Value);
-        // }
-        // else
-        // {
-        //     errorMessage = "User ID not found"; // Handle if the user ID claim is not present
-        //     return;
-        // }
-
-        //var tokens = af.GetAndStoreTokens(HttpContext!);
-
+       
         RegisterPersonDTO personDTO = new()
         {
             FirstName = RegisterPersonModel.FirstName,

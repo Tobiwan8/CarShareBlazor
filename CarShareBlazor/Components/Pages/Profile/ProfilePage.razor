@@ -1,6 +1,8 @@
 ﻿@page "/profile"
 
+@inject NavigationManager navMan
 @attribute [Authorize(Roles = "Admin,User")]
+
 <div class="profile-container">
     <div>
         <h3>Profile</h3>
@@ -20,9 +22,12 @@
     private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
     private CheckIfUserHasPerson? findPerson;
+    private GetUserByID? getUserByID;
 
     private UserModel? userModel;
     private PersonModel? personModel;
+
+    private int userID;
 
     protected override async Task OnInitializedAsync()
     {
@@ -33,10 +38,20 @@
         var userIdClaim = authenticationState.User.FindFirst("UserID");
         if (userIdClaim != null)
         {
+            userID = Convert.ToInt32(userIdClaim.Value);
             findPerson = new();
-            personModel = await findPerson.CheckIfUserHasPersonAsync(Convert.ToInt32(userIdClaim.Value));
-        }
+            personModel = await findPerson.CheckIfUserHasPersonAsync(userID);
+            getUserByID = new();
+            userModel = await getUserByID.GetUserByIDAsync(userID);
 
-        userModel.UserName = authenticationState.User.Identity!.Name;
+            EditProfileService.Profile!.UserID = userModel!.ID;
+            EditProfileService.Profile.UserName = userModel.UserName;
+            EditProfileService.Profile.Password = userModel.Password;
+            EditProfileService.Profile.ConfirmPassword = userModel.Password;
+            EditProfileService.Profile.Role = userModel.Role;
+            EditProfileService.Profile.PersonID = personModel!.ID;
+            EditProfileService.Profile.FirstName = personModel.FirstName;
+            EditProfileService.Profile.LastName = personModel.LastName;
+        }
     }
 }
