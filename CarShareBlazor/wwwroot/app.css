@@ -66,3 +66,23 @@ h1:focus {
 .login-text-field{
     margin: 10px 0;
 }
+
+.profile-container{
+    display:flex;
+    flex-direction: column;
+}
+
+.profile-picture{
+    max-height: 200px;
+    margin-right: 30px;
+}
+
+.profile-props {
+    display:flex;
+    flex-direction: row;
+    margin: 10px 0;
+}
+
+.card{
+    border: 0;
+}

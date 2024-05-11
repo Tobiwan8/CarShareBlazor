@@ -1,7 +1,42 @@
 ﻿@page "/profile"
 
-<h3>ProfilePage</h3>
+@attribute [Authorize(Roles = "Admin,User")]
+<div class="profile-container">
+    <div>
+        <h3>Profile</h3>
+    </div>
+    <div class="profile-props">
+        <img src="/Images/profile-picture.png" class="profile-picture"/>
+        <div class="card">
+            <span class="fw-bolder">@userModel!.UserName</span>
+            <span class="fw-bold">@personModel!.FirstName @personModel!.LastName</span>
+        </div>
+    </div>
+    <a class="btn btn-primary" href="/edit-profile" style="width:200px">Edit Profile</a>
+</div>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
+    private CheckIfUserHasPerson? findPerson;
+
+    private UserModel? userModel;
+    private PersonModel? personModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userModel = new();
+        personModel = new();
+
+        var authenticationState = await authenticationStateTask!;
+        var userIdClaim = authenticationState.User.FindFirst("UserID");
+        if (userIdClaim != null)
+        {
+            findPerson = new();
+            personModel = await findPerson.CheckIfUserHasPersonAsync(Convert.ToInt32(userIdClaim.Value));
+        }
+
+        userModel.UserName = authenticationState.User.Identity!.Name;
+    }
 }
