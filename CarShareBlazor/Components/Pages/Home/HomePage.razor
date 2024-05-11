@@ -4,7 +4,7 @@
 
 <PageTitle>Home</PageTitle>
 
-<img src="Images/homepageimage.png"/>
+<img src="Images/homepageimage.png" />
 
 <div class="row">
     <div class="col-12">
@@ -19,7 +19,7 @@
                         <span>Not a part of CarShare yet? <a class="fw-bolder" href="/register">click here</a> to register and get started!</span>
                     </NotAuthorized>
                     <Authorized>
-                        <span>Loggen in as <b>@context.User.Identity!.Name</b>. <a class="fw-bolder" href="/logout">Click here</a> to log out.</span>
+                        <span>Logged in as <b>@context.User.Identity!.Name</b>. <a class="fw-bolder" href="/logout">Click here</a> to log out.</span>
                     </Authorized>
                 </AuthorizeView>
             </div>
@@ -29,5 +29,5 @@
 
 
 
-@code{
+@code {
 }

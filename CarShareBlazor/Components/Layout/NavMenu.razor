@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@rendermode InteractiveServer
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">CarShare</a>
     </div>
@@ -16,11 +18,48 @@
 
         <AuthorizeView Roles="Admin, User">
             <div class="nav-item px-3">
+                <NavLink class="nav-link" href="profile">
+                    <img src="/bootstrapicons/person-fill.svg" style="margin-right:10px" aria-hidden="true" /> Profile
+                </NavLink>
+            </div>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin,User">
+            <div class="nav-item px-3">
+                <button class="nav-link" @onclick="ExpandCarsMenu">
+                    <img src="/bootstrapicons/car-front-fill.svg" style="margin-right:10px" aria-hidden="true" /> Cars
+                </button>
+                @if (ShowCarsContent)
+                {
+                    <div class="nav-item px-4">
+                        <NavLink class="nav-link" href="owned-cars">
+                            <img src="/bootstrapicons/car-front-fill.svg" style="margin-right:10px" aria-hidden="true" /> Owned
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-4">
+                        <NavLink class="nav-link" href="shared-cars">
+                            <img src="/bootstrapicons/share-fill.svg" style="margin-right:10px" aria-hidden="true" /> Shared
+                        </NavLink>
+                    </div>
+                }
+            </div>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Admin, User">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="bookings">
+                    <img src="/bootstrapicons/calendar-date-fill.svg" style="margin-right:10px" aria-hidden="true" /> Bookings
+                </NavLink>
+            </div>
+        </AuthorizeView>
+
+        @* <AuthorizeView Roles="Admin, User">
+            <div class="nav-item px-3">
                 <NavLink class="nav-link" href="counter">
                     <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
                 </NavLink>
             </div>
-        </AuthorizeView>
+        </AuthorizeView> *@
 
         <AuthorizeView Roles="Admin">
             <div class="nav-item px-3">
@@ -33,3 +72,11 @@
     </nav>
 </div>
 
+@code {
+    private bool ShowCarsContent;
+
+    void ExpandCarsMenu()
+    {
+        ShowCarsContent = !ShowCarsContent;
+    }
+}
