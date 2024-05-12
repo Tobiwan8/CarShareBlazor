@@ -1,5 +1,4 @@
-﻿@rendermode InteractiveServer
-
+﻿
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">CarShare</a>
@@ -26,22 +25,9 @@
 
         <AuthorizeView Roles="Admin,User">
             <div class="nav-item px-3">
-                <button class="nav-link" @onclick="ExpandCarsMenu">
+                <NavLink class="nav-link" href="cars">
                     <img src="/bootstrapicons/car-front-fill.svg" style="margin-right:10px" aria-hidden="true" /> Cars
-                </button>
-                @if (ShowCarsContent)
-                {
-                    <div class="nav-item px-4">
-                        <NavLink class="nav-link" href="owned-cars">
-                            <img src="/bootstrapicons/car-front-fill.svg" style="margin-right:10px" aria-hidden="true" /> Owned
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-4">
-                        <NavLink class="nav-link" href="shared-cars">
-                            <img src="/bootstrapicons/share-fill.svg" style="margin-right:10px" aria-hidden="true" /> Shared
-                        </NavLink>
-                    </div>
-                }
+                </NavLink>
             </div>
         </AuthorizeView>
 
@@ -75,8 +61,4 @@
 @code {
     private bool ShowCarsContent;
 
-    void ExpandCarsMenu()
-    {
-        ShowCarsContent = !ShowCarsContent;
-    }
 }

@@ -1,5 +1,7 @@
 ﻿@page "/shared-cars"
 
+@attribute [Authorize(Roles = "Admin,User")]
+
 <h3>CarsSharedPage</h3>
 
 @code {

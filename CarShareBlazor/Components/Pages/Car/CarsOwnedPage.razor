@@ -1,5 +1,7 @@
 ﻿@page "/owned-cars"
 
+@attribute [Authorize(Roles = "Admin,User")]
+
 <h3>CarsOwnedPage</h3>
 
 @code {

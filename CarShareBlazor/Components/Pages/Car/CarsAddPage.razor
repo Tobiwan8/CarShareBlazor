@@ -1,5 +1,7 @@
 ﻿@page "/add-car"
 
+@attribute [Authorize(Roles = "Admin,User")]
+
 <h3>CarsAddPage</h3>
 
 @code {

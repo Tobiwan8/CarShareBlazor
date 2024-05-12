@@ -18,6 +18,15 @@
                 <InputText @bind-Value="EditProfileVM!.UserName" class="form-control" placeholder="Username" />
                 <ValidationMessage For="() => EditProfileVM.UserName" />
             </div>
+            <div style="display: none">
+                <InputNumber @bind-Value="EditProfileVM.UserID"/>
+            </div>
+            <div style="display: none">
+                <InputNumber @bind-Value="EditProfileVM.PersonID" />
+            </div>
+            <div style="display: none">
+                <InputText @bind-Value="EditProfileVM.Role" />
+            </div>
             <div class="mb-3">
                 <label>Password</label>
                 <InputText @bind-Value="EditProfileVM.Password" placeholder="Password" type="password" class="form-control" />
@@ -91,7 +100,7 @@
                 ID = EditProfileVM!.UserID,
                 UserName = EditProfileVM!.UserName,
                 Password = EditProfileVM.Password,
-                Role = EditProfileVM.Role
+                Role = "User"
             };
 
             editUser = new();
@@ -134,8 +143,8 @@
             EditProfileService.Profile.FirstName = null;
             EditProfileService.Profile.LastName = null;
 
-            navMan.NavigateTo("/profile");
         }
+        navMan.NavigateTo("/profile");
     }
 
     private bool CheckForUserChanges()
