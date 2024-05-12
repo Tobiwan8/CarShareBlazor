@@ -3,7 +3,37 @@
 @attribute [Authorize(Roles = "Admin,User")]
 
 <h3>CarsOwnedPage</h3>
+<div class="container-for-table" style="max-height: 400px; overflow-y: auto; display: block;">
+    <table class="table">
+        <thead style="background:white">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Licenseplate</th>
+            </tr>
+        </thead>
+        <tbody class="tbody">
+            @* @foreach (GetCompaniesForGridRDTO company in companyList!)
+            {
+                <tr @onclick="() => SelectRow(company.ID)" style="cursor:pointer; @SelectRowColor(company.ID)">
+                    <td>@company.ID</td>
+                    <td>@company.Started.ToString("dd-MM-yyyy")</td>
+                    <td>@company.Shortname</td>
+                    <td>@company.Longname</td>
+                    <td>@company.Active</td>
+                    <td>@company.ChangedLast</td>
+                    <td>@company.Owner</td>
+                </tr>
+            } *@
+        </tbody>
+    </table>
+</div>
 
 @code {
 
+
+    protected override async Task OnAfterRenderAsync(bool firstrender)
+    {
+        
+    }
 }

@@ -86,3 +86,7 @@ h1:focus {
 .card{
     border: 0;
 }
+
+.homepage-image{
+    max-width: 100%;
+}
