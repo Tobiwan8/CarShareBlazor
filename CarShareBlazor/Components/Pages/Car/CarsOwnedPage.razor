@@ -11,7 +11,7 @@
 }
 else
 {
-    <div class="container-for-table" style="max-height: 400px; overflow-y: auto; display: block;">
+    <div style="max-height: 400px; overflow-y: auto; display: block;">
         <table class="table">
             <thead style="background:white">
                 <tr>
@@ -35,6 +35,52 @@ else
 }
 
 <button class="btn btn-primary" @onclick="GoToAddCar">Add Car</button>
+
+@if(carSelected is not null)
+{
+    <div class="carselectedcontainer">
+        <div style="width:50%">
+            <div class="carchosen">
+                <div>
+                    <label>ID:</label>
+                    <input type="number" @bind="carSelected.ID" disabled="disabled"/>
+                </div>
+                <div>
+                    <label>Name</label>
+                    <input @bind="carSelected.Name" disabled="disabled"/>
+                </div>
+                <div>
+                    <label>Licenceplate</label>
+                    <input @bind="carSelected.Licenseplate" disabled="disabled" />
+                </div>
+                <button class="btn btn-primary">Edit</button>
+            </div>
+        </div>
+        <div style="max-height: 400px; max-width:100%; overflow-y: auto; display: block;">
+            <h5>Car users</h5>
+            <table class="table">
+                <thead style="background:white">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Licenseplate</th>
+                    </tr>
+                </thead>
+                <tbody class="tbody">
+                    @foreach (CarModel car in carsOwnedList!)
+                    {
+                        <tr @onclick="() => SelectRow(car.ID)" style="cursor:pointer; @SelectRowColor(car.ID)">
+                            <td>@car.ID</td>
+                            <td>@car.Name</td>
+                            <td>@car.Licenseplate</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+}
 
 
 
