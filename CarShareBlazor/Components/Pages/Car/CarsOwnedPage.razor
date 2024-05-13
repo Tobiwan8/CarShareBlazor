@@ -1,8 +1,8 @@
 ﻿@page "/owned-cars"
 
-@rendermode InteractiveServer
-
+@inject NavigationManager navMan
 @attribute [Authorize(Roles = "Admin,User")]
+@rendermode InteractiveServer
 
 <h3>Owned Cars</h3>
 @if(carsOwnedList == null || !carsOwnedList.Any())
@@ -34,6 +34,10 @@ else
     </div>
 }
 
+<button class="btn btn-primary" @onclick="GoToAddCar">Add Car</button>
+
+
+
 
 @code {
     [CascadingParameter]
@@ -57,7 +61,7 @@ else
 
         getOwnedCars = new();
         carsOwnedList = new();
-        carsOwnedList = await getOwnedCars.GetOwnedCarsAsync(4);
+        carsOwnedList = await getOwnedCars.GetOwnedCarsAsync(personID);
     }
 
     private void SelectRow(int carID)
@@ -72,5 +76,10 @@ else
             return "background:#4CBFE1";
         }
         return "";
+    }
+
+    private void GoToAddCar()
+    {
+        navMan.NavigateTo("/add-car");
     }
 }
