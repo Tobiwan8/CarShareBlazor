@@ -60,19 +60,29 @@
             new Claim("UserID", userAccount.ID.ToString())
         };
 
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-        await HttpContext!.SignInAsync(principal);
+        
 
         hasPerson = new();
         personModel = await hasPerson.CheckIfUserHasPersonAsync(userAccount.ID);
 
         if (personModel is null)
         {
+            claims.Add(new Claim("personID", ""));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext!.SignInAsync(principal);
+
             navMan.NavigateTo("/registerperson", true);
         }
         else
         {
+            claims.Add(new Claim("personID", personModel.ID.ToString()));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext!.SignInAsync(principal);
+
             navMan.NavigateTo("/");
         }
     }

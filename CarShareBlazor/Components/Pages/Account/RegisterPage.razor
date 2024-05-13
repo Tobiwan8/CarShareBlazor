@@ -76,7 +76,8 @@
             {
                 new Claim(ClaimTypes.Name, RegisterModel.UserName!),
                 new Claim(ClaimTypes.Role, userAccount.Role!),
-                new Claim("UserID", userAccount.ID.ToString())
+                new Claim("UserID", userAccount.ID.ToString()),
+                new Claim("personID", "")
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

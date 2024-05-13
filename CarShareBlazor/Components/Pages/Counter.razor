@@ -24,6 +24,7 @@
 
     private int currentCount = 0;
     private string? userID;
+    private string? personID;
 
     private void IncrementCount()
     {
@@ -43,7 +44,17 @@
             userID = "User ID not found"; // Handle if the user ID claim is not present
         }
 
-        string message = $"Hello {authenticationState.User.Identity!.Name} {userID}";
+        var personIdClaim = authenticationState.User.FindFirst("personID");
+        if (personIdClaim != null)
+        {
+            personID = personIdClaim.Value;
+        }
+        else
+        {
+            userID = "Person ID not found"; // Handle if the user ID claim is not present
+        }
+
+        string message = $"Hello {authenticationState.User.Identity!.Name} {userID} {personID}";
 
         await js.InvokeVoidAsync("alert", message);
     }

@@ -1,6 +1,7 @@
 ﻿@page "/registerperson"
 
 @inject NavigationManager navMan
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @attribute [Authorize(Roles = "Admin,User")]
 @attribute [RequireAntiforgeryToken(required: false)]
 
@@ -18,7 +19,7 @@
                 <ValidationMessage For="() => RegisterPersonModel.FirstName" />
             </div>
             <div class="mb-3">
-                <label>Password</label>
+                <label>Last Name</label>
                 <InputText @bind-Value="RegisterPersonModel.LastName" placeholder="Last name" class="form-control" />
                 <ValidationMessage For="() => RegisterPersonModel.LastName" />
             </div>
@@ -70,7 +71,7 @@
 
     private async Task RegisterPersonAsync()
     {
-       
+
         RegisterPersonDTO personDTO = new()
         {
             FirstName = RegisterPersonModel.FirstName,
@@ -97,7 +98,38 @@
 
         if (isRegisterSuccess)
         {
+            await UpdatePersonIDClaim();
+
             navMan.NavigateTo("/");
         }
+    }
+
+    private async Task UpdatePersonIDClaim()
+    {
+        personModel = await hasPerson!.CheckIfUserHasPersonAsync(userID);
+
+        if (personModel is null)
+        {
+            errorMessage = "Something went wrong with registering";
+            return;
+        }
+
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+
+        var existingPersonIDClaim = user.FindFirst("personID");
+
+        if (existingPersonIDClaim is not null)
+        {
+            var newPersonIDClaim = new Claim("personID", personModel.ID.ToString());
+            var userClaimsIdentity = (ClaimsIdentity)user.Identity!;
+            userClaimsIdentity.RemoveClaim(existingPersonIDClaim); // Remove the existing claim
+            userClaimsIdentity.AddClaim(newPersonIDClaim); // Add the new claim
+        }
+
+        var claims = ((ClaimsIdentity)user.Identity!).Claims;
+        var newIdentity = new ClaimsIdentity(claims, "ApplicationCookie");
+        var principal = new ClaimsPrincipal(newIdentity);
+        await HttpContext!.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
     }
 }

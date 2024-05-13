@@ -1,39 +1,76 @@
 ﻿@page "/owned-cars"
 
+@rendermode InteractiveServer
+
 @attribute [Authorize(Roles = "Admin,User")]
 
-<h3>CarsOwnedPage</h3>
-<div class="container-for-table" style="max-height: 400px; overflow-y: auto; display: block;">
-    <table class="table">
-        <thead style="background:white">
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Licenseplate</th>
-            </tr>
-        </thead>
-        <tbody class="tbody">
-            @* @foreach (GetCompaniesForGridRDTO company in companyList!)
-            {
-                <tr @onclick="() => SelectRow(company.ID)" style="cursor:pointer; @SelectRowColor(company.ID)">
-                    <td>@company.ID</td>
-                    <td>@company.Started.ToString("dd-MM-yyyy")</td>
-                    <td>@company.Shortname</td>
-                    <td>@company.Longname</td>
-                    <td>@company.Active</td>
-                    <td>@company.ChangedLast</td>
-                    <td>@company.Owner</td>
+<h3>Owned Cars</h3>
+@if(carsOwnedList == null || !carsOwnedList.Any())
+{
+    <span>you currently don't own any cars</span>
+}
+else
+{
+    <div class="container-for-table" style="max-height: 400px; overflow-y: auto; display: block;">
+        <table class="table">
+            <thead style="background:white">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Licenseplate</th>
                 </tr>
-            } *@
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody class="tbody">
+                @foreach (CarModel car in carsOwnedList!)
+                {
+                    <tr @onclick="() => SelectRow(car.ID)" style="cursor:pointer; @SelectRowColor(car.ID)">
+                        <td>@car.ID</td>
+                        <td>@car.Name</td>
+                        <td>@car.Licenseplate</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
+    private GetOwnedCars? getOwnedCars;
 
-    protected override async Task OnAfterRenderAsync(bool firstrender)
+    private List<CarModel>? carsOwnedList;
+    private CarModel? carSelected;
+
+    private int personID;
+
+    protected override async Task OnInitializedAsync()
     {
-        
+        var authenticationState = await authenticationStateTask!;
+        var userIdClaim = authenticationState.User.FindFirst("personID");
+        if(userIdClaim is not null)
+        {
+            personID = Convert.ToInt32(userIdClaim.Value);
+        }
+
+        getOwnedCars = new();
+        carsOwnedList = new();
+        carsOwnedList = await getOwnedCars.GetOwnedCarsAsync(4);
+    }
+
+    private void SelectRow(int carID)
+    {
+        carSelected = carsOwnedList!.FirstOrDefault(c => c.ID == carID);
+    }
+
+    private string SelectRowColor(Int64 id)
+    {
+        if (carSelected != null && id == carSelected.ID)
+        {
+            return "background:#4CBFE1";
+        }
+        return "";
     }
 }
