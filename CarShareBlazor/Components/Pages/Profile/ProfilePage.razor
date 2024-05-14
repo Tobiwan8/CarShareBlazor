@@ -1,7 +1,9 @@
 ﻿@page "/profile"
 
 @inject NavigationManager navMan
+@inject IJSRuntime js
 @attribute [Authorize(Roles = "Admin,User")]
+@rendermode InteractiveServer
 
 <div class="profile-container">
     <div>
@@ -15,6 +17,7 @@
         </div>
     </div>
     <a class="btn btn-primary" href="/edit-profile" style="width:200px">Edit Profile</a>
+    <button class="btn btn-primary" @onclick="DeleteUser" style="width:200px; margin-top: 5px; background:red; color:black;">Delete Profile</button>
 </div>
 
 @code {
@@ -26,6 +29,8 @@
 
     private UserModel? userModel;
     private PersonModel? personModel;
+
+    private DeleteProfile? deleteProfile;
 
     private int userID;
 
@@ -52,6 +57,32 @@
             EditProfileService.Profile.PersonID = personModel!.ID;
             EditProfileService.Profile.FirstName = personModel.FirstName;
             EditProfileService.Profile.LastName = personModel.LastName;
+        }
+    }
+
+    private async Task DeleteUser()
+    {
+        var authenticationState = await authenticationStateTask!;
+        var userIdClaim = authenticationState.User.FindFirst("UserID");
+        if (userIdClaim != null)
+        {
+            userID = Convert.ToInt32(userIdClaim.Value);
+
+            bool answer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to delete? All of your records will be lost!");
+            if (!answer)
+            {
+                return;
+            }
+
+            deleteProfile = new();
+            string? response = await deleteProfile.DeleteUserAsync(userID);
+            if(response != "ok")
+            {
+                await js.InvokeVoidAsync("alert", "Something went wrong");
+                return;
+            }
+
+            navMan.NavigateTo("/delete");
         }
     }
 }
