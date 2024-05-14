@@ -34,7 +34,7 @@ else
         </table>
     </div>
 }
-
+<br />
 <button class="btn btn-primary" @onclick="GoToAddCar">Add Car</button>
 
 @if(carSelected is not null)
@@ -60,34 +60,48 @@ else
                 }
                 else
                 {
-                    <div>
-                        <button class="btn btn-primary" @onclick="EditCarBtn">Cancel</button>
-                        <button class="btn btn-primary" @onclick="EditCarAsync">Update</button>
+                    <div class="edit-buttons-container">
+                        <div>
+                            <button class="btn btn-danger" @onclick="DeleteCarBtn">Delete Car</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" @onclick="EditCarBtn">Cancel</button>
+                            <button class="btn btn-primary" @onclick="EditCarAsync">Update</button>
+                        </div>
                     </div>
                 }
             </div>
         </div>
         <div class="cars-selected-table">
             <h5>Car users for @carSelected.Name</h5>
-            <table class="table">
-                <thead style="background:white">
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Licenseplate</th>
-                    </tr>
-                </thead>
-                <tbody class="tbody">
-                    @foreach (CarModel car in carsOwnedList!)
-                    {
-                        <tr @onclick="() => SelectRow(car.ID)" style="cursor:pointer; @SelectRowColor(car.ID)">
-                            <td>@car.ID</td>
-                            <td>@car.Name</td>
-                            <td>@car.Licenseplate</td>
+            @if (carUsersList is null || !carUsersList.Any())
+            {
+                <span>This car currently has no users</span>
+            }
+            else
+            {
+                <table class="table">
+                    <thead style="background:white">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Last name</th>
+                            <th class="table-actions">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="tbody">
+                        @foreach (PersonModel person in carUsersList)
+                        {
+                            <tr>
+                                <td>@person.ID</td>
+                                <td>@person.FirstName</td>
+                                <td>@person.LastName</td>
+                                <td class="table-actions"><button class="btn btn-danger" @onclick="() => RemovePerson(person.ID)">Remove</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
         </div>
     </div>
 
@@ -109,6 +123,12 @@ else
     private EditCar? editCar;
     private EditCarDTO? editCarDTO;
 
+    private DeleteCar? deleteCar;
+
+    private List<PersonModel>? carUsersList;
+    private GetCarUsers? getCarUsers;
+    private DeletePersonCar? deletePersonCar;
+
     private int personID;
     private bool isEditDisabled;
 
@@ -128,8 +148,13 @@ else
         carsOwnedList = await getOwnedCars.GetOwnedCarsAsync(personID);
     }
 
-    private void SelectRow(int carID)
+    private async void SelectRow(int carID)
     {
+        if (isEditDisabled == false)
+        {
+            isEditDisabled = true;
+        }
+
         carSelected = carsOwnedList!.FirstOrDefault(c => c.ID == carID);
         carSelectedForEdit = new()
         {
@@ -138,10 +163,10 @@ else
             Licenseplate = carSelected.Licenseplate
         };
 
-        if (isEditDisabled == false)
-        {
-            isEditDisabled = true;
-        }
+        getCarUsers = new();
+        carUsersList = await getCarUsers.GetCarUsersAsync(carSelected.ID);
+
+        StateHasChanged();
     }
 
     private string SelectRowColor(Int64 id)
@@ -191,6 +216,42 @@ else
         isEditDisabled = !isEditDisabled;
 
         await js.InvokeVoidAsync("alert", "Car has been successfully updated");
+    }
 
+    private async Task DeleteCarBtn()
+    {
+        bool answer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to delete this car?");
+        if (!answer)
+        {
+            await js.InvokeVoidAsync("alert", "Deleting canceled");
+            return;
+        }
+
+        deleteCar = new();
+        string? response = await deleteCar.DeleteCarAsync(carSelected!.ID);
+        if(response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        carsOwnedList!.RemoveAt(carsOwnedList!.FindIndex(c => c.ID == carSelected!.ID));
+
+        carSelected = null;
+
+        await js.InvokeVoidAsync("alert", "Car has been successfully deleted");
+    }
+
+    private async Task RemovePerson(int personID)
+    {
+        bool asnwer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this person from using the car?");
+        deletePersonCar = new();
+        string? response = await deletePersonCar.DeletePersonCarAsync(personID, carSelected!.ID);
+
+        if(response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
     }
 }
