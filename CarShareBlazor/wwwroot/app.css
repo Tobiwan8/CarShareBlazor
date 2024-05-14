@@ -90,20 +90,3 @@ h1:focus {
 .homepage-image{
     max-width: 100%;
 }
-
-/*.carselected-container{
-    display: flex;
-    margin: 50px;
-}*/
-
-.carselectedcontainer{
-    display: flex;
-    margin: 10px 0;
-}
-
-.carchosen{
-    display:flex;
-    flex-direction: column;
-    width: 80%;
-    justify-content: right;
-}

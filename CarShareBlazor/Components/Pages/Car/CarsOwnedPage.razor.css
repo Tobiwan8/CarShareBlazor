@@ -1,0 +1,41 @@
+﻿body {
+}
+
+.cars-table {
+    max-height: 400px;
+    overflow-y: auto;
+    display: block;
+}
+
+.car-selected-container {
+    display: flex;
+    margin: 10px 0;
+    flex-wrap: nowrap;
+    padding-left: 100px;
+    position: relative;
+}
+
+.car-chosen {
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+    align-items: end;
+    justify-content: space-between;
+    height: 200px;
+    transition: width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .car-chosen {
+        width: 100%;
+        align-items: center;
+    }
+}
+
+.cars-selected-table {
+    max-height: 400px;
+    min-width: 50%;
+    overflow-y: auto;
+    display: block;
+    transition: width 0.3s ease;
+}

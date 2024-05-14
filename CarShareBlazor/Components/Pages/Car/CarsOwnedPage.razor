@@ -1,6 +1,7 @@
 ﻿@page "/owned-cars"
 
 @inject NavigationManager navMan
+@inject IJSRuntime js
 @attribute [Authorize(Roles = "Admin,User")]
 @rendermode InteractiveServer
 
@@ -11,7 +12,7 @@
 }
 else
 {
-    <div style="max-height: 400px; overflow-y: auto; display: block;">
+    <div class="cars-table">
         <table class="table">
             <thead style="background:white">
                 <tr>
@@ -38,26 +39,36 @@ else
 
 @if(carSelected is not null)
 {
-    <div class="carselectedcontainer">
+    <div class="car-selected-container">
         <div style="width:50%">
-            <div class="carchosen">
+            <div class="car-chosen">
                 <div>
                     <label>ID:</label>
-                    <input type="number" @bind="carSelected.ID" disabled="disabled"/>
+                    <input type="number" @bind="carSelectedForEdit!.ID" disabled="disabled" />
                 </div>
                 <div>
                     <label>Name</label>
-                    <input @bind="carSelected.Name" disabled="disabled"/>
+                    <input @bind="carSelectedForEdit.Name" disabled="@isEditDisabled" />
                 </div>
                 <div>
                     <label>Licenceplate</label>
-                    <input @bind="carSelected.Licenseplate" disabled="disabled" />
+                    <input @bind="carSelectedForEdit.Licenseplate" disabled="@isEditDisabled" />
                 </div>
-                <button class="btn btn-primary">Edit</button>
+                @if (isEditDisabled)
+                {
+                    <button class="btn btn-primary" @onclick="EditCarBtn">Edit</button>
+                }
+                else
+                {
+                    <div>
+                        <button class="btn btn-primary" @onclick="EditCarBtn">Cancel</button>
+                        <button class="btn btn-primary" @onclick="EditCarAsync">Update</button>
+                    </div>
+                }
             </div>
         </div>
-        <div style="max-height: 400px; max-width:100%; overflow-y: auto; display: block;">
-            <h5>Car users</h5>
+        <div class="cars-selected-table">
+            <h5>Car users for @carSelected.Name</h5>
             <table class="table">
                 <thead style="background:white">
                     <tr>
@@ -93,8 +104,13 @@ else
 
     private List<CarModel>? carsOwnedList;
     private CarModel? carSelected;
+    private CarModel? carSelectedForEdit;
+
+    private EditCar? editCar;
+    private EditCarDTO? editCarDTO;
 
     private int personID;
+    private bool isEditDisabled;
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,6 +121,8 @@ else
             personID = Convert.ToInt32(userIdClaim.Value);
         }
 
+        isEditDisabled = true;
+
         getOwnedCars = new();
         carsOwnedList = new();
         carsOwnedList = await getOwnedCars.GetOwnedCarsAsync(personID);
@@ -113,6 +131,17 @@ else
     private void SelectRow(int carID)
     {
         carSelected = carsOwnedList!.FirstOrDefault(c => c.ID == carID);
+        carSelectedForEdit = new()
+        {
+            ID = carSelected!.ID,
+            Name = carSelected.Name,
+            Licenseplate = carSelected.Licenseplate
+        };
+
+        if (isEditDisabled == false)
+        {
+            isEditDisabled = true;
+        }
     }
 
     private string SelectRowColor(Int64 id)
@@ -127,5 +156,41 @@ else
     private void GoToAddCar()
     {
         navMan.NavigateTo("/add-car");
+    }
+
+    private void EditCarBtn()
+    {
+        carSelectedForEdit!.ID = carSelected!.ID;
+        carSelectedForEdit.Name = carSelected.Name;
+        carSelectedForEdit.Licenseplate = carSelected.Licenseplate;
+        isEditDisabled = !isEditDisabled;
+    }
+
+    private async Task EditCarAsync()
+    {
+        editCarDTO = new()
+        {
+            ID = carSelectedForEdit!.ID,
+            Name = carSelectedForEdit.Name,
+            Licenseplate = carSelectedForEdit.Licenseplate
+        };
+
+        editCar = new();
+        string? response = await editCar.EditCarAsync(editCarDTO);
+
+        if(response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "Something went wrong. Please make sure that licenseplate is correct");
+            return;
+        }
+
+        carSelected!.ID = carSelectedForEdit!.ID;
+        carSelected.Name = carSelectedForEdit.Name;
+        carSelected.Licenseplate = carSelectedForEdit.Licenseplate;
+
+        isEditDisabled = !isEditDisabled;
+
+        await js.InvokeVoidAsync("alert", "Car has been successfully updated");
+
     }
 }
