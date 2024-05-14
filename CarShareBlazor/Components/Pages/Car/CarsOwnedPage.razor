@@ -102,13 +102,16 @@ else
                     </tbody>
                 </table>
             }
+            <button class="btn btn-primary" @onclick="AddPersonActivate">Add User</button>
+            @if (isAddPersonDisabled)
+            {
+                <label>Search Username: </label>
+                <input @bind="searchUserName"/> 
+                @* FROM HERE !!*@
+            }
         </div>
     </div>
-
 }
-
-
-
 
 @code {
     [CascadingParameter]
@@ -131,6 +134,10 @@ else
 
     private int personID;
     private bool isEditDisabled;
+    private bool isAddPersonDisabled;
+    private string? searchUserName;
+
+    private GetPersonByUserNameDTO? getPersonByUserNameDTO; //FROM HERE
 
     protected override async Task OnInitializedAsync()
     {
@@ -244,7 +251,11 @@ else
 
     private async Task RemovePerson(int personID)
     {
-        bool asnwer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this person from using the car?");
+        bool answer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this person from using the car?");
+        if (!answer)
+        {
+            return;
+        }
         deletePersonCar = new();
         string? response = await deletePersonCar.DeletePersonCarAsync(personID, carSelected!.ID);
 
@@ -253,5 +264,14 @@ else
             await js.InvokeVoidAsync("alert", "Something went wrong");
             return;
         }
+
+        carUsersList!.RemoveAt(carUsersList!.FindIndex(p => p.ID == personID));
+
+        await js.InvokeVoidAsync("alert", "Person has been removed from your car");
+    }
+
+    private void AddPersonActivate()
+    {
+        isAddPersonDisabled = !isAddPersonDisabled;
     }
 }

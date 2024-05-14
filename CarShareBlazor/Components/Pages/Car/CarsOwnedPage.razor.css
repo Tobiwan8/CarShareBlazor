@@ -51,3 +51,8 @@
 .table-actions {
     text-align: right;
 }
+
+.user-header-btn-container{
+    display: flex;
+    justify-content: space-between;
+}
