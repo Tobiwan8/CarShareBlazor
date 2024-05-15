@@ -77,6 +77,7 @@ else
             @if (carUsersList is null || !carUsersList.Any())
             {
                 <span>This car currently has no users</span>
+                <br />
             }
             else
             {
@@ -103,12 +104,31 @@ else
                 </table>
             }
             <button class="btn btn-primary" @onclick="AddPersonActivate">Add User</button>
-            @if (isAddPersonDisabled)
-            {
-                <label>Search Username: </label>
-                <input @bind="searchUserName"/> 
-                @* FROM HERE !!*@
-            }
+            <div class="all-search-container">
+                @if (isAddPersonDisabled)
+                {
+                    <div class="search-user-container">
+                        <label>Search Username: </label>
+                        <input @bind="searchUserName"/> 
+                        <button class="btn btn-primary" @onclick="() => SearchForPersonByUserName(searchUserName)">Search</button>
+                    </div>
+                    <div class="search-user-container">
+                        @if (getPersonByUserNameDTO is not null)
+                        {
+                            <div class="found-person">
+                                <span><b>@searchUserName</b></span>
+                                <span>@getPersonByUserNameDTO.FirstName</span>
+                                <span>@getPersonByUserNameDTO.LastName</span>
+                                <button class="btn btn-primary" @onclick="AddUserToCar">Add</button>
+                            </div>
+                        }
+                        else if (hasUserNameBeenSearched == true && getPersonByUserNameDTO is null)
+                        {
+                            <span>This user does not exist</span>
+                        }
+                    </div>
+                }
+            </div>
         </div>
     </div>
 }
@@ -132,12 +152,17 @@ else
     private GetCarUsers? getCarUsers;
     private DeletePersonCar? deletePersonCar;
 
+    private GetPersonByUserNameDTO? getPersonByUserNameDTO;
+    private GetPersonByUserName? getPersonByUserName;
+
+    private AddPersonCarDTO? addPersonCarDTO;
+    private AddPersonCar? addPersonCar;
+
     private int personID;
     private bool isEditDisabled;
     private bool isAddPersonDisabled;
     private string? searchUserName;
-
-    private GetPersonByUserNameDTO? getPersonByUserNameDTO; //FROM HERE
+    private bool hasUserNameBeenSearched;
 
     protected override async Task OnInitializedAsync()
     {
@@ -155,12 +180,17 @@ else
         carsOwnedList = await getOwnedCars.GetOwnedCarsAsync(personID);
     }
 
-    private async void SelectRow(int carID)
+    private async Task SelectRow(int carID)
     {
         if (isEditDisabled == false)
         {
             isEditDisabled = true;
         }
+
+        isAddPersonDisabled = false;
+        searchUserName = null;
+        getPersonByUserNameDTO = null;
+
 
         carSelected = carsOwnedList!.FirstOrDefault(c => c.ID == carID);
         carSelectedForEdit = new()
@@ -273,5 +303,42 @@ else
     private void AddPersonActivate()
     {
         isAddPersonDisabled = !isAddPersonDisabled;
+        hasUserNameBeenSearched = false;
+    }
+
+    private async Task SearchForPersonByUserName(string userName)
+    {
+        getPersonByUserName = new();
+        getPersonByUserNameDTO = await getPersonByUserName.GetPersonByUserNameAsync(userName);
+        hasUserNameBeenSearched = true;
+    }
+
+    private async Task AddUserToCar()
+    {
+        bool answer = await js.InvokeAsync<bool>("confirm", "are you sure you want to add this user to your car?");
+
+        if (!answer)
+        {
+            return;
+        }
+
+        addPersonCarDTO = new()
+        {
+            personID = getPersonByUserNameDTO!.ID,
+            carID = carSelected!.ID
+        };
+
+        addPersonCar = new();
+        string? response = await addPersonCar.AddPersonCarAsync(addPersonCarDTO);
+
+        if(response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        await js.InvokeVoidAsync("alert", "User has been added to your car");
+
+        await SelectRow(carSelected.ID);
     }
 }

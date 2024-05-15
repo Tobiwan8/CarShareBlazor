@@ -40,6 +40,7 @@
     overflow-y: auto;
     display: block;
     transition: width 0.3s ease;
+    padding-left: 5px;
 }
 
 .edit-buttons-container{
@@ -55,4 +56,23 @@
 .user-header-btn-container{
     display: flex;
     justify-content: space-between;
+}
+
+.all-search-container{
+    display:flex;
+    width: 50%;
+    justify-content: space-between;
+}
+
+.search-user-container {
+    display: flex;
+    flex-direction: column;
+    height: 120px;
+    width: 150px;
+    justify-content: space-evenly;
+}
+
+.found-person{
+    display: flex;
+    flex-direction: column;
 }
