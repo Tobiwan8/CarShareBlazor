@@ -1,9 +1,23 @@
 ﻿@page "/add-booking"
+@page "/add-booking/{carID:int}"
 
 @attribute [Authorize(Roles = "Admin,User")]
 
 <h3>BookingAddPage</h3>
 
+<span>@message</span>
 @code {
+    [Parameter]
+    public int? CarID { get; set; }
 
+    private string? message;
+
+    protected override void OnParametersSet()
+    {
+        // Use the CarID parameter as needed in your component logic
+        if (CarID.HasValue)
+        {
+            message = CarID.ToString();
+        }
+    }
 }

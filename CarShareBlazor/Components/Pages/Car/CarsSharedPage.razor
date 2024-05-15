@@ -1,9 +1,154 @@
 ﻿@page "/shared-cars"
 
+@inject NavigationManager navMan
+@inject IJSRuntime js
 @attribute [Authorize(Roles = "Admin,User")]
+@rendermode InteractiveServer
 
-<h3>CarsSharedPage</h3>
+<h3>Shared Cars</h3>
+@if (carsSharedList == null || !carsSharedList.Any())
+{
+    <span>you currently don't use any shared cars</span>
+}
+else
+{
+    <div class="cars-table">
+        <table class="table">
+            <thead style="background:white">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Licenseplate</th>
+                    <th class="table-actions">Action</th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                @foreach (CarModel car in carsSharedList!)
+                {
+                    <tr @onclick="() => SelectRow(car.ID)" style="cursor:pointer; @SelectRowColor(car.ID)">
+                        <td>@car.ID</td>
+                        <td>@car.Name</td>
+                        <td>@car.Licenseplate</td>
+                        <td class="table-actions"><button class="btn btn-danger" @onclick="() => RemovePerson(car.ID)">Remove</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if(carSelected is not null)
+{
+    @if (carBookingsList == null || !carBookingsList.Any())
+    {
+        <span>This car currently has no bookings</span>
+        <br />
+    }
+    else
+    {
+        <div style="border-top: 2px solid black; margin-top: 5px; padding-top: 10px;">
+            <h5>Car bookings</h5>
+            <div class="cars-table-two">
+                <table class="table">
+                    <thead style="background:white">
+                        <tr>
+                            <th>Car</th>
+                            <th>Name</th>
+                            <th>Start date</th>
+                            <th>End date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbody">
+                        @foreach (var booking in carBookingsList)
+                        {
+                            <tr @onclick="() => SelectRow(booking.ID)" style="cursor:pointer; @SelectRowColor(booking.ID)">
+                                <td>@carSelected.Name</td>
+                                <td>@booking.PersonFullName</td>
+                                <td>@booking.StartDate</td>
+                                <td>@booking.EndDate</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    <button class="btn btn-primary" @onclick="() => GoToBookingAddPage(carSelected.ID)">Book car</button>
+}
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
+    private GetUserCars? getUserCars;
+    private List<CarModel>? carsSharedList;
+
+    private CarModel? carSelected;
+
+    private GetCarBookings? getCarBookings;
+    private List<CarBookingDTO>? carBookingsList;
+
+    private DeletePersonCar? deletePersonCar;
+
+    private int personID;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await authenticationStateTask!;
+        var userIdClaim = authenticationState.User.FindFirst("personID");
+        if (userIdClaim is not null)
+        {
+            personID = Convert.ToInt32(userIdClaim.Value);
+        }
+        getUserCars = new();
+        carsSharedList = new();
+        carsSharedList = await getUserCars.GetUserCarsAsync(personID);
+    }
+
+    private async Task SelectRow(int carID)
+    {
+        carSelected = carsSharedList!.FirstOrDefault(c => c.ID == carID);
+
+        getCarBookings = new();
+        carBookingsList = await getCarBookings.GetCarBookingsAsync(carSelected!.ID);
+
+        StateHasChanged();
+    }
+
+    private string SelectRowColor(Int64 id)
+    {
+        if (carSelected != null && id == carSelected.ID)
+        {
+            return "background:#4CBFE1";
+        }
+        return "";
+    }
+
+    private async Task RemovePerson(int carID)
+    {
+        bool answer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this person from using the car?");
+        if (!answer)
+        {
+            return;
+        }
+        deletePersonCar = new();
+        string? response = await deletePersonCar.DeletePersonCarAsync(personID, carID);
+
+        if (response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        carsSharedList!.RemoveAt(carsSharedList!.FindIndex(p => p.ID == carID));
+
+        await js.InvokeVoidAsync("alert", "Person has been removed from your car");
+
+        carSelected = null;
+    }
+
+    private void GoToBookingAddPage(int carID)
+    {
+        navMan.NavigateTo($"/add-booking/{carID}");
+    }
 }

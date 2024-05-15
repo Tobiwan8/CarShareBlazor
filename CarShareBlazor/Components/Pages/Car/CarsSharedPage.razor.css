@@ -1,0 +1,19 @@
+﻿body {
+}
+
+.cars-table {
+    max-height: 400px;
+    overflow-y: auto;
+    display: block;
+}
+
+.cars-table-two {
+    max-height: 400px;
+    overflow-y: auto;
+    display: block;
+    max-width: 800px;
+}
+
+.table-actions {
+    text-align: right;
+}

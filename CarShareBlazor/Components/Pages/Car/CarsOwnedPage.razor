@@ -279,7 +279,7 @@ else
         await js.InvokeVoidAsync("alert", "Car has been successfully deleted");
     }
 
-    private async Task RemovePerson(int personID)
+    private async Task RemovePerson(int perID)
     {
         bool answer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to remove this person from using the car?");
         if (!answer)
@@ -287,7 +287,7 @@ else
             return;
         }
         deletePersonCar = new();
-        string? response = await deletePersonCar.DeletePersonCarAsync(personID, carSelected!.ID);
+        string? response = await deletePersonCar.DeletePersonCarAsync(perID, carSelected!.ID);
 
         if(response != "ok")
         {
@@ -295,7 +295,7 @@ else
             return;
         }
 
-        carUsersList!.RemoveAt(carUsersList!.FindIndex(p => p.ID == personID));
+        carUsersList!.RemoveAt(carUsersList!.FindIndex(p => p.ID == perID));
 
         await js.InvokeVoidAsync("alert", "Person has been removed from your car");
     }
@@ -324,8 +324,8 @@ else
 
         addPersonCarDTO = new()
         {
-            personID = getPersonByUserNameDTO!.ID,
-            carID = carSelected!.ID
+            PersonID = getPersonByUserNameDTO!.ID,
+            CarID = carSelected!.ID
         };
 
         addPersonCar = new();

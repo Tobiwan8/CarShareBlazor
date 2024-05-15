@@ -2,7 +2,7 @@
 {
     public class AddPersonCarDTO
     {
-        public int personID {  get; set; }
-        public int carID { get; set; }
+        public int PersonID {  get; set; }
+        public int CarID { get; set; }
     }
 }
