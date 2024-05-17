@@ -1,9 +1,82 @@
 ﻿@page "/bookings"
 
+@inject NavigationManager navMan
+@inject IJSRuntime js
 @attribute [Authorize(Roles = "Admin,User")]
+@rendermode InteractiveServer
 
-<h3>BookingPage</h3>
+<h3>Owned Cars</h3>
+@if (personBookings == null || !personBookings.Any())
+{
+    <span>you currently don't own any cars</span>
+}
+else
+{
+    <div class="cars-table">
+        <table class="table">
+            <thead style="background:white">
+                <tr>
+                    <th>ID</th>
+                    <th>Car</th>
+                    <th>Start date</th>
+                    <th>End date</th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                @foreach (PersonBookingDTO booking in personBookings)
+                {
+                    <tr @onclick="() => SelectRow(booking.ID)" style="cursor:pointer; @SelectRowColor(booking.ID);">
+                        <td>@booking.ID</td>
+                        <td>@booking.CarName</td>
+                        <td>@booking.StartDate</td>
+                        <td>@booking.EndDate</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+<br />
+<button class="btn btn-primary" >Add Booking</button>
 
-@code {
+@code{
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
+    private GetPersonBookings? getPersonBookings;
+    private List<PersonBookingDTO>? personBookings;
+
+    private PersonBookingDTO? bookingSelected;
+
+    private int personID;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await authenticationStateTask!;
+        var userIdClaim = authenticationState.User.FindFirst("personID");
+        if (userIdClaim is not null)
+        {
+            personID = Convert.ToInt32(userIdClaim.Value);
+        }
+
+
+        getPersonBookings = new();
+        personBookings = new();
+        personBookings = await getPersonBookings.GetPersonBookingsAsync(personID);
+    }
+
+    private async Task SelectRow(int bookingID)
+    {
+        await Task.Delay(1);
+        bookingSelected = personBookings!.FirstOrDefault(b => b.ID == bookingID);
+    }
+
+    private string SelectRowColor(int id)
+    {
+        if (bookingSelected != null && id == bookingSelected.ID)
+        {
+            return "background:#4CBFE1";
+        }
+        return "";
+    }
 }
