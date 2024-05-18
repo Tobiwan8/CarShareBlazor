@@ -2,35 +2,121 @@
 @page "/add-booking/{carID:int}"
 
 @attribute [Authorize(Roles = "Admin,User")]
+@inject IJSRuntime js
 @rendermode InteractiveServer
 
 <h3>Add booking</h3>
 <br />
 
 <div class="book-type-selector">
-    <button class="btn btn-primary" @onclick="() => { bookByCar = true; bookByDate = false; }">By car</button>
+    <button class="btn btn-primary" @onclick="BookByCar">By car</button>
     <button class="btn btn-primary" @onclick="() => { bookByCar = false; bookByDate = true; }">By date</button>
 </div>
+<br />
 
 @if (bookByCar)
 {
-    <span>By car</span>
+    <h4>Book car</h4>
+
+    @if(getUserCarsList is null)
+    {
+        <span>There is currently not any cars shared with you</span>
+    }
+    else
+    {
+        <div class="column">
+            <label>Choose car: </label>
+            <select @onchange="OnSelectedCarChanged">
+                <option value="">Select a car</option>
+                @foreach(var car in getUserCarsList!)
+                {
+                    <option value="@car.ID">@car.Name</option>
+                }
+            </select>
+        </div>
+        <br />
+    }
+
+    @if(carSelected is not null)
+    {
+        @if (carBookingsList is null || !carBookingsList.Any())
+        {
+            <span>This car currently has no bookings</span>
+            <br />
+        }
+        else
+        {
+            <div class="book-by-car-container">
+                <div class="cars-table-two">
+                    <h5>Car bookings</h5>
+                    <table class="table">
+                        <thead style="background:white">
+                            <tr>
+                                <th>Car</th>
+                                <th>Name</th>
+                                <th>Start date</th>
+                                <th>End date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbody">
+                            @foreach (var booking in carBookingsList.OrderBy(b => b.StartDate))
+                            {
+                                <tr>
+                                    <td>@carSelected.Name</td>
+                                    <td>@booking.PersonFullName</td>
+                                    <td>@booking.StartDate</td>
+                                    <td>@booking.EndDate</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="column">
+                    <h5>Create booking</h5>
+                    <div class="add-booking-input">
+                        <div>
+                            <label>Start date:</label>
+                            <input type="date" @bind="addBookingDTO!.StartDate" />
+                        </div>
+                        <div>
+                            <label>End date:</label>
+                            <input type="date" @bind="addBookingDTO.EndDate" />
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" @onclick="AddBooking">Add booking</button>
+                </div>
+            </div>
+        }
+    }
 }
 
 @if (bookByDate)
 {
-    <span>By date</span>
+    <span>Under construction</span>
 }
 
 <span>@message</span>
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
     [Parameter]
     public int? CarID { get; set; }
 
+    private GetUserCars? getUserCars;
+    private List<CarModel>? getUserCarsList;
+
+    private CarModel? carSelected;
+    private GetCarBookings? getCarBookings;
+    private List<CarBookingDTO>? carBookingsList;
+
+    private AddBooking? addBooking;
+    private AddBookingDTO? addBookingDTO;
+
+    private int personID;
     private string? message;
     private bool bookByCar;
     private bool bookByDate;
-    
 
     protected override void OnParametersSet()
     {
@@ -38,5 +124,62 @@
         {
             message = CarID.ToString();
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await authenticationStateTask!;
+        var userIdClaim = authenticationState.User.FindFirst("personID");
+        if (userIdClaim is not null)
+        {
+            personID = Convert.ToInt32(userIdClaim.Value);
+        }
+    }
+
+    private async Task BookByCar()
+    {
+        bookByCar = true;
+        bookByDate = false;
+
+        getUserCars = new();
+        getUserCarsList = await getUserCars.GetUserCarsAsync(personID);
+    }
+
+    private async Task OnSelectedCarChanged(ChangeEventArgs e)
+    {
+        var selectedCarId = int.Parse(e.Value!.ToString()!);
+        carSelected = getUserCarsList!.FirstOrDefault(car => car.ID == selectedCarId);
+        if (carSelected != null)
+        {
+            getCarBookings = new();
+            carBookingsList = await getCarBookings.GetCarBookingsAsync(carSelected!.ID);
+
+            addBookingDTO = new()
+            {
+                CarID = selectedCarId,
+                PersonID = personID,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today
+            };
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddBooking()
+    {
+        addBooking = new();
+        string? response = await addBooking.AddBookingAsync(addBookingDTO!);
+
+        if(response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "This car is not available in the requested time period or you already have a booking on another car");
+            return;
+        }
+
+        await js.InvokeVoidAsync("alert", "Booking successfully submitted");
+
+        getCarBookings = new();
+        carBookingsList = await getCarBookings.GetCarBookingsAsync(carSelected!.ID);
     }
 }

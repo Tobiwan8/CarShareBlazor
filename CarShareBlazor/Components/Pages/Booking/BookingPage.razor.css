@@ -1,6 +1,12 @@
 ﻿body {
 }
 
-.edit-container{
-    
+.edit-container div{
+    margin: 10px 0;
+    max-width: 200px;
+}
+
+.edit-input{
+    display:flex;
+    flex-direction: column;
 }

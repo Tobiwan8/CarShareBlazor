@@ -59,7 +59,7 @@ else
                         </tr>
                     </thead>
                     <tbody class="tbody">
-                        @foreach (var booking in carBookingsList)
+                        @foreach (var booking in carBookingsList.OrderBy(b => b.StartDate))
                         {
                             <tr @onclick="() => SelectRow(booking.ID)" style="cursor:pointer; @SelectRowColor(booking.ID)">
                                 <td>@carSelected.Name</td>

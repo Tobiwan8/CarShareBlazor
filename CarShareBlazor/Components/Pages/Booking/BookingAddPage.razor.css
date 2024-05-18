@@ -12,3 +12,30 @@
 .book-type-selector button{
     width: 45%;
 }
+
+.cars-table-two {
+    max-height: 400px;
+    overflow-y: auto;
+    display: block;
+    max-width: 800px;
+    padding-right: 100px;
+}
+
+.book-by-car-container{
+    display:flex;
+    width: 100%
+}
+
+.book-by-car-container div{
+    width: 50%;
+}
+
+.add-booking-input{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.add-booking-input div{
+    margin-top: 5px;
+}
