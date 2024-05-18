@@ -1,0 +1,14 @@
+﻿body {
+}
+
+.book-type-selector{
+    display: flex;
+    width: 100%;
+    justify-content: space-evenly;
+    border-bottom: 2px solid black;
+    padding-bottom: 10px;
+}
+
+.book-type-selector button{
+    width: 45%;
+}

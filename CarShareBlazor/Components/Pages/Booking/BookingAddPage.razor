@@ -2,8 +2,25 @@
 @page "/add-booking/{carID:int}"
 
 @attribute [Authorize(Roles = "Admin,User")]
+@rendermode InteractiveServer
 
-<h3>BookingAddPage</h3>
+<h3>Add booking</h3>
+<br />
+
+<div class="book-type-selector">
+    <button class="btn btn-primary" @onclick="() => { bookByCar = true; bookByDate = false; }">By car</button>
+    <button class="btn btn-primary" @onclick="() => { bookByCar = false; bookByDate = true; }">By date</button>
+</div>
+
+@if (bookByCar)
+{
+    <span>By car</span>
+}
+
+@if (bookByDate)
+{
+    <span>By date</span>
+}
 
 <span>@message</span>
 @code {
@@ -11,10 +28,12 @@
     public int? CarID { get; set; }
 
     private string? message;
+    private bool bookByCar;
+    private bool bookByDate;
+    
 
     protected override void OnParametersSet()
     {
-        // Use the CarID parameter as needed in your component logic
         if (CarID.HasValue)
         {
             message = CarID.ToString();

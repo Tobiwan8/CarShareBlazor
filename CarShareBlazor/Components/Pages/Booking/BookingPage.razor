@@ -5,14 +5,15 @@
 @attribute [Authorize(Roles = "Admin,User")]
 @rendermode InteractiveServer
 
-<h3>Owned Cars</h3>
+<h3>Bookings</h3>
 @if (personBookings == null || !personBookings.Any())
 {
     <span>you currently don't own any cars</span>
+    <br />
 }
 else
 {
-    <div class="cars-table">
+    <div class="bookings-table">
         <table class="table">
             <thead style="background:white">
                 <tr>
@@ -20,6 +21,7 @@ else
                     <th>Car</th>
                     <th>Start date</th>
                     <th>End date</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody class="tbody">
@@ -30,6 +32,7 @@ else
                         <td>@booking.CarName</td>
                         <td>@booking.StartDate</td>
                         <td>@booking.EndDate</td>
+                        <td><button class="btn btn-danger" @onclick="() => RemoveBooking(booking.ID)">Remove</button></td>
                     </tr>
                 }
             </tbody>
@@ -37,7 +40,23 @@ else
     </div>
 }
 <br />
-<button class="btn btn-primary" >Add Booking</button>
+<button class="btn btn-primary" @onclick="GoToAddBooking">Add Booking</button>
+
+@if(bookingSelected is not null && bookingForEdit is not null)
+{
+    <div class="edit-container">
+        <input @bind="bookingSelected.CarName" disabled="disabled"/>
+        <input type="date" @bind="bookingForEdit.StartDate" disabled="@isEditDisabled" />
+        <input type="date" @bind="bookingForEdit.EndDate" disabled="@isEditDisabled" />
+        <div>
+            <button class="btn btn-primary" @onclick="() => isEditDisabled = !isEditDisabled">Edit</button>
+            @if (isEditDisabled)
+            {
+                <button class="btn btn-primary" @onclick="() => UpdateBooking(bookingSelected.ID)">Confirm</button>
+            }
+        </div>
+    </div>
+}
 
 @code{
     [CascadingParameter]
@@ -47,8 +66,15 @@ else
     private List<PersonBookingDTO>? personBookings;
 
     private PersonBookingDTO? bookingSelected;
+    private PersonBookingDTO? bookingForEdit;
+
+    private DeleteBooking? deleteBooking;
+
+    private EditBooking? editBooking;
+    private EditBookingDTO? editBookingDTO;
 
     private int personID;
+    private bool isEditDisabled;
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,10 +91,15 @@ else
         personBookings = await getPersonBookings.GetPersonBookingsAsync(personID);
     }
 
-    private async Task SelectRow(int bookingID)
+    private void SelectRow(int bookingID)
     {
-        await Task.Delay(1);
         bookingSelected = personBookings!.FirstOrDefault(b => b.ID == bookingID);
+        bookingForEdit = new()
+        {
+            ID = bookingSelected!.ID,
+            StartDate = bookingSelected.StartDate,
+            EndDate = bookingSelected.EndDate
+        };
     }
 
     private string SelectRowColor(int id)
@@ -78,5 +109,58 @@ else
             return "background:#4CBFE1";
         }
         return "";
+    }
+
+    private void GoToAddBooking()
+    {
+        navMan.NavigateTo("/add-booking");
+    }
+
+    private async Task RemoveBooking(int bookingID)
+    {
+        bool answer = await js.InvokeAsync<bool>("confirm", "Are you sure you want to delete booking?");
+
+        if (!answer)
+        {
+            return;
+        }
+
+        deleteBooking = new();
+        string? response = await deleteBooking.DeleteBookingAsync(bookingID);
+
+        if(response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "something went wrong");
+            return;
+        }
+
+        personBookings!.RemoveAt(personBookings.FindIndex(b => b.ID == bookingID));
+
+        await js.InvokeVoidAsync("alert", "Booking has been deleted");
+
+        StateHasChanged();
+    }
+
+    private async Task UpdateBooking(int bookingID)
+    {
+        editBookingDTO = new()
+        {
+            ID = bookingForEdit!.ID,
+            StartDate = bookingForEdit.StartDate,
+            EndDate = bookingForEdit.EndDate
+        };
+
+        editBooking = new();
+        string? response = await editBooking.EditBookingAsync(editBookingDTO);
+
+        if (response != "ok")
+        {
+            await js.InvokeVoidAsync("alert", "This car is not available in the requested time period");
+            return;
+        }
+
+        await js.InvokeVoidAsync("alert", "Booking has been successfully updated");
+
+        StateHasChanged();
     }
 }
